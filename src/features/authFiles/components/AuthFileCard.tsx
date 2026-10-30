@@ -33,6 +33,7 @@ import { deriveAuthFileIdentity } from '@/features/authFiles/identity';
 import { resolveAuthFileQuotaType } from '@/features/authFiles/logic';
 import type { AuthFileStatusBarData } from '@/features/authFiles/hooks/useAuthFilesStatusBarCache';
 import { AuthFileQuotaSection } from '@/features/authFiles/components/AuthFileQuotaSection';
+import { AuthFileUsageSummary } from './AuthFileUsageSummary';
 import { AuthFileCooldownSection } from './AuthFileCooldownSection';
 import { getSiwcBindingStatus, supportsSiwcBinding } from '@/features/oauth/siwcBinding';
 import { SiwcStatusBadge } from '@/features/oauth/components/SiwcStatusBadge';
@@ -250,6 +251,8 @@ export function AuthFileCard(props: AuthFileCardProps) {
           </>
         )}
       </div>
+
+      <AuthFileUsageSummary file={file} />
 
       {supportsSiwcBinding(file) && (
         <div className={styles.siwcRow}>

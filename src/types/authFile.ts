@@ -39,6 +39,24 @@ export interface AuthFileCooldownSnapshot {
   records: AuthFileCooldown[] | null;
 }
 
+/** Rate-limit guard snapshot; absent on older backends. Utilization/limits are ratios 0..1. */
+export interface AuthFileUsageGuard {
+  utilization5h?: number;
+  utilization7d?: number;
+  reset5h?: string;
+  reset7d?: string;
+  observedAt?: string;
+  /** Limit actually applied after precedence; 0 or undefined means none. */
+  effectiveLimit7d?: number;
+  effectiveLimit5h?: number;
+  limitSource?: 'auth' | 'config' | 'none';
+  parked: boolean;
+  parkedUntil?: string;
+  parkedWindow?: '5h' | '7d';
+  /** Parked but still served because no other OAuth account can serve. */
+  failOpen: boolean;
+}
+
 export interface AuthFileItem {
   name: string;
   siwcBindSupported?: boolean;
@@ -71,6 +89,10 @@ export interface AuthFileItem {
   modified?: number;
   priority?: number;
   weight?: number;
+  /** Per-account max utilization percent (1..100); undefined = no limit. */
+  usageLimit7d?: number;
+  usageLimit5h?: number;
+  usageGuard?: AuthFileUsageGuard;
   note?: string;
   success?: unknown;
   failed?: unknown;

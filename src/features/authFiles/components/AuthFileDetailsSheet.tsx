@@ -19,8 +19,10 @@ import {
 } from '@/features/authFiles/constants';
 import { MAX_CREDENTIAL_WEIGHT } from '@/utils/credentialWeight';
 import { AuthFileExcludedModelsField } from './AuthFileExcludedModelsField';
+import { AuthFileUsageLimitFields } from './AuthFileUsageLimitFields';
 import { AuthFilePolicyFields } from './AuthFilePolicyFields';
 import { credentialPolicyError, readCredentialPolicy } from '../credentialPolicy';
+import { usageLimitDraftError } from '../usageLimit';
 import styles from './AuthFileDetailsSheet.module.scss';
 
 /** API 边界归一化补写的派生字段——INFO 视图里只展示后端原始形状，避免重复噪音。 */
@@ -157,6 +159,7 @@ export function AuthFileDetailsSheet(props: AuthFileDetailsSheetProps) {
               !editor?.json ||
               Boolean(editor?.headersTouched && editor.headersError) ||
               Boolean(editor?.weightError) ||
+              usageLimitDraftError(editor) ||
               Boolean(credentialPolicyError(editor?.policy))
             }
           >
@@ -239,6 +242,17 @@ export function AuthFileDetailsSheet(props: AuthFileDetailsSheetProps) {
                     disabled={disableControls || editor.saving || !editor.json}
                     onChange={(e) => onChange('weight', e.target.value)}
                   />
+                  {(editor.providerKey === 'claude' ||
+                    editor.usageGuard ||
+                    editor.usageLimit7dEnabled ||
+                    editor.usageLimit5hEnabled) && (
+                    <AuthFileUsageLimitFields
+                      disabled={disableControls || editor.saving || !editor.json}
+                      guard={editor.usageGuard}
+                      values={editor}
+                      onChange={onChange}
+                    />
+                  )}
                   <div className="form-group">
                     <label>{t('auth_files.disable_cooling_label')}</label>
                     <ToggleSwitch

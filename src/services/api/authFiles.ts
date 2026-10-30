@@ -15,6 +15,7 @@ import {
   normalizeUsageTotal,
 } from '@/utils/recentRequests';
 import { parseTimestampMs } from '@/utils/timestamp';
+import { normalizeUsageGuard, normalizeUsageLimitPercent } from './authFileUsageLimit';
 import { normalizeAuthFileCooldowns, normalizeCooldownTimestamp } from './authFileCooldowns';
 
 type AuthFileStatusResponse = { status: string; disabled: boolean };
@@ -40,6 +41,9 @@ export type AuthFileFieldsPatch = {
   headers?: Record<string, string>;
   priority?: number;
   weight?: number | null;
+  /** 1..100 sets the limit; null removes it. */
+  usage_limit_7d?: number | null;
+  usage_limit_5h?: number | null;
   disable_cooling?: boolean;
   'disable-cooling'?: boolean;
   websockets?: boolean;
@@ -280,6 +284,9 @@ const normalizeAuthFileEntry = (
   const modified = readDateField(entry);
   const priority = readIntegerField(entry['priority']);
   const weight = readIntegerField(entry['weight']);
+  const usageLimit7d = normalizeUsageLimitPercent(entry['usage_limit_7d']);
+  const usageLimit5h = normalizeUsageLimitPercent(entry['usage_limit_5h']);
+  const usageGuard = normalizeUsageGuard(entry['usage_guard']);
   const supportsQuota = readBooleanField(entry['supports_quota'] ?? entry.supportsQuota);
   const quotaProvider =
     readTextField(entry, 'quota_provider') || readTextField(entry, 'quotaProvider');
@@ -305,6 +312,9 @@ const normalizeAuthFileEntry = (
     ...(modified > 0 ? { modified } : {}),
     priority,
     weight,
+    ...(usageLimit7d !== undefined ? { usageLimit7d } : {}),
+    ...(usageLimit5h !== undefined ? { usageLimit5h } : {}),
+    ...(usageGuard ? { usageGuard } : {}),
     ...(note ? { note } : {}),
     ...(email ? { email } : {}),
     ...(projectId ? { projectId } : {}),

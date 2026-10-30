@@ -11,7 +11,12 @@ import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { apiClient, authFilesApi, type AuthFileFieldsPatch } from '@/services/api';
 import { notifyAuthFilesChanged } from '@/features/authFiles/authFilesEvents';
-import type { AuthFileItem } from '@/types';
+import type { AuthFileItem, AuthFileUsageGuard } from '@/types';
+import {
+  buildUsageLimitPatch,
+  readUsageLimit,
+  usageLimitDraftError,
+} from '@/features/authFiles/usageLimit';
 import { useNotificationStore } from '@/stores';
 import {
   applyAuthFileWebsockets,
@@ -49,6 +54,10 @@ export type PrefixProxyEditorField =
   | 'proxyUrl'
   | 'priority'
   | 'weight'
+  | 'usageLimit7dEnabled'
+  | 'usageLimit7d'
+  | 'usageLimit5hEnabled'
+  | 'usageLimit5h'
   | 'disableCooling'
   | 'websockets'
   | 'usingApi'
@@ -76,6 +85,14 @@ export type PrefixProxyEditorState = {
   priority: string;
   weight: string;
   weightError: string | null;
+  /** Optional so older fixtures stay valid; patches only apply once touched. */
+  usageLimit7dEnabled?: boolean;
+  usageLimit7d?: string;
+  usageLimit5hEnabled?: boolean;
+  usageLimit5h?: string;
+  usageLimitTouched?: boolean;
+  /** Live utilization snapshot from the list entry (read-only). */
+  usageGuard?: AuthFileUsageGuard;
   disableCooling: boolean;
   disableCoolingTouched: boolean;
   websockets: boolean;
@@ -335,6 +352,8 @@ export const buildAuthFileFieldsPatch = (
     patch.weight = nextWeight;
   }
 
+  Object.assign(patch, buildUsageLimitPatch(original, editor));
+
   if (editor.disableCoolingTouched) {
     const originalDisableCooling = readAuthFileDisableCooling(original);
     const nextDisableCooling = Boolean(editor.disableCooling);
@@ -433,6 +452,16 @@ const buildPrefixProxyUpdatedText = (
     }
   }
 
+  (['usage_limit_7d', 'usage_limit_5h'] as const).forEach((key) => {
+    const value = patch[key];
+    if (value === undefined) return;
+    if (value === null) {
+      delete next[key];
+    } else {
+      next[key] = value;
+    }
+  });
+
   if (patch.weight !== undefined) {
     if (patch.weight === null) {
       delete next.weight;
@@ -495,6 +524,7 @@ export function useAuthFilesPrefixProxyEditor(
   const hasBlockingValidationError = Boolean(
     (prefixProxyEditor?.headersTouched && prefixProxyEditor.headersError) ||
     prefixProxyEditor?.weightError ||
+    usageLimitDraftError(prefixProxyEditor) ||
     credentialPolicyError(prefixProxyEditor?.policy)
   );
   const prefixProxyUpdatedText =
@@ -546,6 +576,12 @@ export function useAuthFilesPrefixProxyEditor(
       priority: '',
       weight: '',
       weightError: null,
+      usageLimit7dEnabled: false,
+      usageLimit7d: '',
+      usageLimit5hEnabled: false,
+      usageLimit5h: '',
+      usageLimitTouched: false,
+      usageGuard: file.usageGuard,
       disableCooling: false,
       disableCoolingTouched: false,
       websockets: false,
@@ -602,6 +638,8 @@ export function useAuthFilesPrefixProxyEditor(
       const proxyUrl = typeof json.proxy_url === 'string' ? json.proxy_url : '';
       const priority = parsePriorityValue(json.priority);
       const weight = readCredentialWeight(json.weight);
+      const usageLimit7d = readUsageLimit(json.usage_limit_7d);
+      const usageLimit5h = readUsageLimit(json.usage_limit_5h);
       const disableCooling = readAuthFileDisableCooling(json);
       const websockets = supportsAuthFileWebsockets(providerKey)
         ? readAuthFileWebsockets(json)
@@ -634,6 +672,11 @@ export function useAuthFilesPrefixProxyEditor(
           priority: priority !== undefined ? String(priority) : '',
           weight: weight !== undefined ? String(weight) : '',
           weightError: null,
+          usageLimit7dEnabled: usageLimit7d !== undefined,
+          usageLimit7d: usageLimit7d !== undefined ? String(usageLimit7d) : '',
+          usageLimit5hEnabled: usageLimit5h !== undefined,
+          usageLimit5h: usageLimit5h !== undefined ? String(usageLimit5h) : '',
+          usageLimitTouched: false,
           disableCooling,
           disableCoolingTouched: false,
           websockets,
@@ -691,6 +734,16 @@ export function useAuthFilesPrefixProxyEditor(
           weight,
           weightError: error ? t(credentialWeightErrorKey(error)) : null,
         };
+      }
+      if (field === 'usageLimit7dEnabled' || field === 'usageLimit5hEnabled') {
+        const enabled = Boolean(value);
+        const textKey = field === 'usageLimit7dEnabled' ? 'usageLimit7d' : 'usageLimit5h';
+        // Seed a sensible default when switching on with an empty input.
+        const seed = enabled && !prev[textKey]?.trim() ? { [textKey]: '80' } : {};
+        return { ...prev, ...seed, [field]: enabled, usageLimitTouched: true };
+      }
+      if (field === 'usageLimit7d' || field === 'usageLimit5h') {
+        return { ...prev, [field]: String(value), usageLimitTouched: true };
       }
       if (field === 'disableCooling') {
         return {

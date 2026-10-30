@@ -391,6 +391,21 @@
     "weight_hint": "默认值为 1；小于或等于 0 时不参与加权调度；最大值为 1,000,000。填入后打开<settingsLink>加权轮询设置</settingsLink>即可生效。",
     "weight_invalid_integer": "权重必须是整数。",
     "weight_invalid_max": "权重不能超过 1,000,000。",
+    "usage_limit_title": "用量上限",
+    "usage_limit_hint": "当该账号的速率限制用量达到下方百分比时暂停使用，直到窗口重置。关闭表示不设单账号上限。",
+    "usage_limit_window_7d": "7 天窗口",
+    "usage_limit_window_5h": "5 小时窗口",
+    "usage_limit_toggle": "启用 {{window}}用量上限",
+    "usage_limit_percent_label": "最大用量（%）",
+    "usage_limit_invalid": "请输入 1 到 100 的整数。",
+    "usage_limit_used": "{{window}} 已用：{{percent}}",
+    "usage_limit_used_resets": "{{window}} 已用：{{percent}} · 重置于 {{time}}",
+    "usage_limit_resets": "重置于 {{time}}",
+    "usage_limit_pill_title": "{{window}} 已用 {{used}}，上限 {{limit}}",
+    "usage_limit_paused": "已暂停",
+    "usage_limit_paused_until": "暂停至 {{time}}",
+    "usage_limit_fail_open": "故障放行",
+    "usage_limit_fail_open_detail": "故障放行：仍在使用，没有其他可用账号。",
     "disable_cooling_label": "禁用指数冷却（disable_cooling）",
     "disable_cooling_hint": "开启后，仅当前凭证跳过失败后的冷却与指数退避；其他凭证不受影响。",
     "use_siwc_label": "使用 SIWC（use_siwc）",
@@ -549,7 +564,6 @@
     "reset_confirm_button": "确认重置",
     "reset_not_confirmed": "未确认额度重置成功，请刷新额度后再决定是否重试。",
     "reset_cooldown_failed": "额度已重置，但代理冷却清除失败。请在原连接的认证文件页面使用“清除冷却”，不要再次消耗重置卡。",
-
     "reset_success": "已重置 \"{{name}}\" 的 Codex 额度",
     "reset_failed": "重置 \"{{name}}\" 的 Codex 额度失败：{{message}}",
     "plan_plus": "Plus",
@@ -2311,3 +2325,4 @@
     "expired": "绑定会话已过期，请重新开始。"
   }
 }
+
