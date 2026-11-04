@@ -440,7 +440,22 @@
     "quota_refresh_single": "Kotayı Yenile",
     "quota_refresh_hint": "Yalnızca Bu Kimlik Bilgisinin Kotasını Yenile",
     "quota_refresh_success": "“{{name}}” için Kota Yenilendi",
-    "quota_refresh_failed": "“{{name}}” için Kota Yenilenemedi: {{message}}"
+    "quota_refresh_failed": "“{{name}}” için Kota Yenilenemedi: {{message}}",
+    "usage_limit_title": "Kullanım sınırı",
+    "usage_limit_hint": "Bu hesabın hız sınırı kullanımı aşağıdaki yüzdeye ulaştığında, pencere sıfırlanana kadar hesabı beklemeye al. Kapalı olması hesap başına sınır olmadığı anlamına gelir.",
+    "usage_limit_window_7d": "7 günlük pencere",
+    "usage_limit_window_5h": "5 saatlik pencere",
+    "usage_limit_toggle": "{{window}} kullanım sınırını etkinleştir",
+    "usage_limit_percent_label": "Maks. kullanım (%)",
+    "usage_limit_invalid": "1 ile 100 arasında bir tam sayı girin.",
+    "usage_limit_used": "Kullanılan {{window}}: {{percent}}",
+    "usage_limit_used_resets": "Kullanılan {{window}}: {{percent}} · sıfırlanma {{time}}",
+    "usage_limit_resets": "sıfırlanma {{time}}",
+    "usage_limit_pill_title": "{{window}} kullanımı {{used}} / sınır {{limit}}",
+    "usage_limit_paused": "Beklemede",
+    "usage_limit_paused_until": "{{time}} tarihine kadar beklemede",
+    "usage_limit_fail_open": "Açık geçiş",
+    "usage_limit_fail_open_detail": "Açık geçiş: başka hesap olmadığı için hâlâ hizmet veriyor."
   },
   "antigravity_subscription": {
     "plan_unknown": "Bilinmiyor",
